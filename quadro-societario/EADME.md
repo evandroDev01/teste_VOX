@@ -23,16 +23,13 @@ O sistema oferece **CRUD de empresas** e **CRUD de sócios**, com as entidades r
 - PostgreSQL instalado
 - Git
 
-## Instalação e Execução
+## Rodando com Docker
 
-1. Clone o repositório:
-
-```bash
-git clone <URL_DO_SEU_REPOSITORIO>
-cd quadro-societario-backend
+O projeto pode ser executado usando Docker para simplificar a configuração do ambiente.
 
 
-2. Instale as dependências:
+
+1. Instale as dependências:
 
 composer install
 
@@ -40,16 +37,20 @@ composer install
 
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/quadro_soci?serverVersion=15&charset=utf8"
 
-4. Crie o banco de dados:
+4. 1. Rodando o projeto
+
+docker-compose up -d
+
+5. Crie o banco de dados:
 
 php bin/console doctrine:database:create
 
-5. Execute as migrations para criar tabelas:
+6. Execute as migrations para criar tabelas:
 
 php bin/console doctrine:migrations:migrate
 
 
-6. Inicie o servidor Symfony:
+7. Inicie o servidor Symfony:
 
 symfony serve
 # ou

@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\DTO\CompanyDTO;
-use App\Entity\Company;
-use App\Service\CompanyService;
+use App\DTO\PartnerDTO;
+use App\Entity\Partner;
+use App\Service\PartnerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,14 +12,14 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route("/api/companies")]
-class CompanyController extends AbstractController
+#[Route('/api/partners')]
+class PartnerController extends AbstractController
 {
-    private CompanyService $service;
+    private PartnerService $service;
     private SerializerInterface $serializer;
     private ValidatorInterface $validator;
 
-    public function __construct(CompanyService $service, SerializerInterface $serializer, ValidatorInterface $validator)
+    public function __construct(PartnerService $service, SerializerInterface $serializer, ValidatorInterface $validator)
     {
         $this->service = $service;
         $this->serializer = $serializer;
@@ -29,30 +29,33 @@ class CompanyController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        $companies = $this->service->getAll();
-        $data = $this->serializer->serialize($companies, 'json', ['groups' => 'company:list']);
+        $partners = $this->service->getAll();
+        $data = $this->serializer->serialize($partners, 'json', ['groups' => 'partner:list']);
+
         return new JsonResponse($data, 200, [], true);
     }
 
     #[Route('/{id}', methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
-        $company = $this->service->getById($id);
-        if (!$company) {
-            return new JsonResponse(['message' => 'Company not found'], 404);
+        $partner = $this->service->getById($id);
+        if (!$partner) {
+            return new JsonResponse(['message' => 'Partner not found'], 404);
         }
 
-        $data = $this->serializer->serialize($company, 'json', ['groups' => 'company:item']);
+        $data = $this->serializer->serialize($partner, 'json', ['groups' => 'partner:item']);
         return new JsonResponse($data, 200, [], true);
     }
 
     #[Route('', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $dto = new CompanyDTO();
+        $dto = new PartnerDTO();
         $data = json_decode($request->getContent(), true);
+
         $dto->name = $data['name'] ?? null;
-        $dto->cnpj = $data['cnpj'] ?? null;
+        $dto->CpfCnpj = $data['CpfCnpj'] ?? null;
+        $dto->companyId = $data['companyId'] ?? null;
 
         $errors = $this->validator->validate($dto);
         if (count($errors) > 0) {
@@ -63,23 +66,26 @@ class CompanyController extends AbstractController
             return new JsonResponse(['errors' => $messages], 400);
         }
 
-        $company = $this->service->create($dto);
-        $response = $this->serializer->serialize($company, 'json', ['groups' => 'company:item']);
+        $partner = $this->service->create($dto);
+        $response = $this->serializer->serialize($partner, 'json', ['groups' => 'partner:item']);
+
         return new JsonResponse($response, 201, [], true);
     }
 
     #[Route('/{id}', methods: ['PUT'])]
     public function update(Request $request, int $id): JsonResponse
     {
-        $company = $this->service->getById($id);
-        if (!$company) {
-            return new JsonResponse(['message' => 'Company not found'], 404);
+        $partner = $this->service->getById($id);
+        if (!$partner) {
+            return new JsonResponse(['message' => 'Partner not found'], 404);
         }
 
-        $dto = new CompanyDTO();
+        $dto = new PartnerDTO();
         $data = json_decode($request->getContent(), true);
-        $dto->name = $data['name'] ?? $company->getName();
-        $dto->cnpj = $data['cnpj'] ?? $company->getCnpj();
+
+        $dto->name = $data['name'] ?? $partner->getName();
+        $dto->CpfCnpj = $data['CpfCnpj'] ?? $partner->getCpfCnpj();
+        $dto->companyId = $data['companyId'] ?? $partner->getCompany()?->getId();
 
         $errors = $this->validator->validate($dto);
         if (count($errors) > 0) {
@@ -90,20 +96,21 @@ class CompanyController extends AbstractController
             return new JsonResponse(['errors' => $messages], 400);
         }
 
-        $updatedCompany = $this->service->update($company, $dto);
-        $response = $this->serializer->serialize($updatedCompany, 'json', ['groups' => 'company:item']);
+        $updatedPartner = $this->service->update($partner, $dto);
+        $response = $this->serializer->serialize($updatedPartner, 'json', ['groups' => 'partner:item']);
+
         return new JsonResponse($response, 200, [], true);
     }
 
     #[Route('/{id}', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
-        $company = $this->service->getById($id);
-        if (!$company) {
-            return new JsonResponse(['message' => 'Company not found'], 404);
+        $partner = $this->service->getById($id);
+        if (!$partner) {
+            return new JsonResponse(['message' => 'Partner not found'], 404);
         }
 
-        $this->service->delete($company);
+        $this->service->delete($partner);
         return new JsonResponse(null, 204);
     }
 }

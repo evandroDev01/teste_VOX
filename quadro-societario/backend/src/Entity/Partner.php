@@ -1,45 +1,66 @@
 <?php
 
 namespace App\Entity;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: "partner")]
+#[ORM\Entity(repositoryClass: "App\Repository\PartnerRepository")]
 class Partner
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private int $id;
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: "integer")]
+    #[Groups(["partner:list", "partner:item"])]
+    private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 255)]
-    private string $name;
+    #[ORM\Column(length: 255)]
+    #[Groups(["partner:list", "partner:item"])]
+    private ?string $name = null;
 
-    #[ORM\Column(type: "string", length: 20)]
-    private string $cpfCnpj;
+    #[ORM\Column(length: 14)]
+    #[Groups(["partner:list", "partner:item"])]
+    private ?string $cpfCnpj = null;
 
-    #[ORM\ManyToOne(targetEntity: Company::class, inversedBy: "partners")]
+    #[ORM\ManyToOne(targetEntity: Company::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private Company $company;
+    #[Groups(["partner:item"])]
+    private ?Company $company = null;
 
-    #[ORM\ManyToOne(targetEntity: Role::class, inversedBy: "partners")]
-    #[ORM\JoinColumn(nullable: false)]
-    private Role $role;
+    
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    #[ORM\Column(type: "float")]
-    private float $sharePercentage;
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
 
-    // getters e setters
-    public function getId(): int { return $this->id; }
-    public function getName(): string { return $this->name; }
-    public function setName(string $name): void { $this->name = $name; }
-    public function getCpfCnpj(): string { return $this->cpfCnpj; }
-    public function setCpfCnpj(string $cpfCnpj): void { $this->cpfCnpj = $cpfCnpj; }
-    public function getCompany(): Company { return $this->company; }
-    public function setCompany(Company $company): void { $this->company = $company; }
-    public function getRole(): Role { return $this->role; }
-    public function setRole(Role $role): void { $this->role = $role; }
-    public function getSharePercentage(): float { return $this->sharePercentage; }
-    public function setSharePercentage(float $sharePercentage): void { $this->sharePercentage = $sharePercentage; }
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function getCpfCnpj(): ?string
+    {
+        return $this->cpfCnpj;
+    }
+
+    public function setCpfCnpj(string $cpfCnpj): self
+    {
+        $this->cpfCnpj = $cpfCnpj;
+        return $this;
+    }
+
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(?Company $company): self
+    {
+        $this->company = $company;
+        return $this;
+    }
 }

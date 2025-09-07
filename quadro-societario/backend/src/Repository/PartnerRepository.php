@@ -2,14 +2,14 @@
 
 namespace App\Repository;
 
-use App\Entity\Company;
+use App\Entity\Partner;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class CompanyRepository extends ServiceEntityRepository
+class PartnerRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Company::class);
+        parent::__construct($registry, Partner::class);
     }
 }

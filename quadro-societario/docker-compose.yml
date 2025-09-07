@@ -1,69 +1,26 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
-  php:
-    image: php:8.2-fpm
-    container_name: vox_php
-    restart: always
-    working_dir: /var/www/html/backend
-    volumes:
-      - ./backend:/var/www/html
-    depends_on:
-      - db
-
-  # Nginx
-  web:
-    image: nginx:alpine
-    container_name: vox_nginx
-    restart: always
-    ports:
-      - "8000:80"
-    volumes:
-      - ./backend:/var/www/html/backend
-      - ./default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - php
-
-  frontend:
-    image: node:20
-    container_name: vox_frontend
-    working_dir: /usr/src/app
-    volumes:
-      - ./frontend/frontend-app:/usr/src/app
-    ports:
-      - "4200:4200"
-    command: sh -c "npm install && npm run start -- --host 0.0.0.0 --port 4200"
-    restart: always
-    depends_on:
-    - php
-
-  
-
-  db:
+  postgres:
     image: postgres:16
-    container_name: vox_postgres
-    restart: always
+    container_name: quadro_postgres
     environment:
-      POSTGRES_DB: vox_quadro
       POSTGRES_USER: symfony
-      POSTGRES_PASSWORD: symfony
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: quadro_soci
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: vox_pgadmin
+  adminer:
+    image: adminer
+    container_name: quadro_adminer
     restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@local.com
-      PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80"
+      - "8080:8080"
     depends_on:
-      - db
+      - postgres
 
 volumes:
-  db_data:
+  pgdata:

@@ -52,9 +52,7 @@ php bin/console doctrine:migrations:migrate
 
 7. Inicie o servidor Symfony:
 
-symfony serve
-# ou
-php -S 127.0.0.1:8000 -t public
+ao rodar o (docker-compose up -d) - já vai criar os servidores de acesso 
 
 
 ## Estrutura do Projeto

@@ -75,8 +75,52 @@ public/                → Diretório público do Symfony
 - API RESTful seguindo boas práticas
 
 - Estrutura organizada e princípios SOLID
-
+  
 - Preparado para consumo de frontend externo (Angular, React, etc.)
+  
+- Autenticação JWT para rotas protegidas
+
+# Autenticação JWT
+
+O projeto utiliza JWT (JSON Web Token) para proteger as rotas da API.
+Todas as rotas que começam com /api (exceto /api/login_check) exigem um token válido no header Authorization.
+
+1 Criando um usuário manualmente
+
+ comando - php bin/console security:hash-password 
+
+2. Login
+
+- Endpoint: POST /api/login_check
+
+- Body :
+{
+  "email": "seuemail@exemplo.com",
+  "password": "suasenha"
+}
+
+- Resposta esperada:
+
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..." obs : token de exemplo
+}
+
+
+3. Usar o token nas rotas protegidas
+
+- Envie o token no header Authorization:
+
+Key	Value
+Authorization	Bearer SEU_TOKEN_AQUI
+
+
+4. Se o token não for enviado ou estiver inválido, a API retornará:
+
+{
+  "code": 401,
+  "message": "JWT Token not found"
+}
+
 
 # Endpoints da API
 

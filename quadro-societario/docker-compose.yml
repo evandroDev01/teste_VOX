@@ -1,6 +1,22 @@
 version: "3.8"
 
 services:
+  app:
+    build: ./backend
+    container_name: quadro_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    working_dir: /app/backend
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: 1
+      DATABASE_URL: "pgsql://symfony:secret@postgres:5432/quadro_soci"
+    depends_on:
+      - postgres
+    command: php -S 0.0.0.0:8000 -t public
+
   postgres:
     image: postgres:16
     container_name: quadro_postgres

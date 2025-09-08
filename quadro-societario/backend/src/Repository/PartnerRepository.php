@@ -12,4 +12,16 @@ class PartnerRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Partner::class);
     }
+
+    public function save(Partner $partner): void
+    {
+        $this->_em->persist($partner);
+        $this->_em->flush();
+    }
+
+    public function remove(Partner $partner): void
+    {
+        $this->_em->remove($partner);
+        $this->_em->flush();
+    }
 }

@@ -4,22 +4,15 @@ namespace App\Service;
 
 use App\Entity\Company;
 use App\Dto\CompanyDTO;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\CompanyRepository;
 
 class CompanyService
 {
-    private EntityManagerInterface  $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
+    public function __construct(private CompanyRepository $repository) {}
 
     public function create(CompanyDTO $dto): Company
     {
-        $existing = $this->em->getRepository(Company::class)
-        ->findOneBy(['cnpj' => $dto->cnpj]);
-
+        $existing = $this->repository->findOneBy(['cnpj' => $dto->cnpj]);
         if ($existing) {
             throw new \Exception("CNPJ já cadastrado!");
         }
@@ -28,9 +21,7 @@ class CompanyService
         $company->setName($dto->name);
         $company->setCnpj($dto->cnpj);
 
-        $this->em->persist($company);
-        $this->em->flush();
-
+        $this->repository->save($company);
         return $company;
     }
 
@@ -39,34 +30,32 @@ class CompanyService
         $company->setName($dto->name);
         $company->setCnpj($dto->cnpj);
 
-        $this->em->flush();
+        $this->repository->save($company);
         return $company;
     }
 
     public function getAll(): array
     {
-        return $this->em->getRepository(Company::class)->findAll();
+        return $this->repository->findAll();
     }
 
     public function getById(int $id): ?Company
     {
-        return $this->em->getRepository(Company::class)->find($id);
+        return $this->repository->find($id);
     }
 
     public function delete(Company $company): void
     {
-        $this->em->remove($company);
-        $this->em->flush();
+        $this->repository->remove($company);
     }
 
     public function getByFilter(?string $name = null): array
     {
-        $repo = $this->em->getRepository(Company::class);
-        $qb = $repo->createQueryBuilder('c');
+        $qb = $this->repository->createQueryBuilder('c');
 
         if ($name) {
             $qb->where('c.name LIKE :name')
-            ->setParameter('name', "%$name%");
+               ->setParameter('name', "%$name%");
         }
 
         return $qb->getQuery()->getResult();

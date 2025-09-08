@@ -12,4 +12,17 @@ class CompanyRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Company::class);
     }
+
+    public function save(Company $company): void
+    {
+        $this->_em->persist($company);
+        $this->_em->flush();
+    }
+
+
+    public function remove(Company $company): void
+    {
+        $this->_em->remove($company);
+        $this->_em->flush();
+    }
 }

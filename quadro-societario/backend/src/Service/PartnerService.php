@@ -5,65 +5,63 @@ namespace App\Service;
 use App\Entity\Partner;
 use App\Entity\Company;
 use App\DTO\PartnerDTO;
+use App\Repository\PartnerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class PartnerService
 {
-    private EntityManagerInterface $em;
+    public function __construct(
+        private PartnerRepository $repository,
+        private EntityManagerInterface $em
+    ) {}
 
-    public function __construct(EntityManagerInterface $em)
+    public function getAll(): array
     {
-        $this->em = $em;
+        return $this->repository->findAll();
+    }
+
+    public function getById(int $id): ?Partner
+    {
+        return $this->repository->find($id);
     }
 
     public function create(PartnerDTO $dto): Partner
     {
-        $company = $this->em->getRepository(Company::class)->find($dto->companyId);
-        if (!$company) {
-            throw new \InvalidArgumentException("Company not found");
-        }
-
         $partner = new Partner();
         $partner->setName($dto->name);
         $partner->setCpfCnpj($dto->CpfCnpj);
-        $partner->setCompany($company);
 
-        $this->em->persist($partner);
-        $this->em->flush();
+        if ($dto->companyId) {
+            $company = $this->em->getRepository(Company::class)->find($dto->companyId);
+            if ($company) {
+                $partner->setCompany($company);
+            }
+        }
+
+        $this->repository->save($partner);
 
         return $partner;
     }
 
     public function update(Partner $partner, PartnerDTO $dto): Partner
     {
-        $company = $this->em->getRepository(Company::class)->find($dto->companyId);
-        if (!$company) {
-            throw new \InvalidArgumentException("Company not found");
+        $partner->setName($dto->name ?? $partner->getName());
+        $partner->setCpfCnpj($dto->cpfCnpj ?? $partner->getCpfCnpj());
+
+        if ($dto->companyId) {
+            $company = $this->em->getRepository(Company::class)->find($dto->companyId);
+            if ($company) {
+                $partner->setCompany($company);
+            }
         }
 
-        $partner->setName($dto->name);
-        $partner->setCpfCnpj($dto->CpfCnpj);
-        $partner->setCompany($company);
+        $this->repository->save($partner);
 
-        $this->em->flush();
         return $partner;
-    }
-
-    public function getAll(): array
-    {
-        return $this->em->getRepository(Partner::class)->findAll();
-    }
-
-    public function getById(int $id): ?Partner
-    {
-        return $this->em->getRepository(Partner::class)->find($id);
     }
 
     public function delete(Partner $partner): void
     {
-        $this->em->remove($partner);
-        $this->em->flush();
+        $this->repository->remove($partner);
     }
-
-
 }

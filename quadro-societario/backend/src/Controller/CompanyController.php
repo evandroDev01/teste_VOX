@@ -15,16 +15,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route("/api/companies")]
 class CompanyController extends AbstractController
 {
-    private CompanyService $service;
-    private SerializerInterface $serializer;
-    private ValidatorInterface $validator;
-
-    public function __construct(CompanyService $service, SerializerInterface $serializer, ValidatorInterface $validator)
-    {
-        $this->service = $service;
-        $this->serializer = $serializer;
-        $this->validator = $validator;
-    }
+    public function __construct(
+        private CompanyService $service,
+        private SerializerInterface $serializer,
+        private ValidatorInterface $validator
+    ) {}
 
     #[Route('', methods: ['GET'])]
     public function index(): JsonResponse
@@ -49,18 +44,11 @@ class CompanyController extends AbstractController
     #[Route('', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $dto = new CompanyDTO();
-        $data = json_decode($request->getContent(), true);
-        $dto->name = $data['name'] ?? null;
-        $dto->cnpj = $data['cnpj'] ?? null;
+        $dto = $this->mapRequestToDTO($request);
 
         $errors = $this->validator->validate($dto);
         if (count($errors) > 0) {
-            $messages = [];
-            foreach ($errors as $error) {
-                $messages[] = $error->getPropertyPath() . ': ' . $error->getMessage();
-            }
-            return new JsonResponse(['errors' => $messages], 400);
+            return $this->validationErrorsResponse($errors);
         }
 
         $company = $this->service->create($dto);
@@ -76,18 +64,11 @@ class CompanyController extends AbstractController
             return new JsonResponse(['message' => 'Company not found'], 404);
         }
 
-        $dto = new CompanyDTO();
-        $data = json_decode($request->getContent(), true);
-        $dto->name = $data['name'] ?? $company->getName();
-        $dto->cnpj = $data['cnpj'] ?? $company->getCnpj();
+        $dto = $this->mapRequestToDTO($request, $company);
 
         $errors = $this->validator->validate($dto);
         if (count($errors) > 0) {
-            $messages = [];
-            foreach ($errors as $error) {
-                $messages[] = $error->getPropertyPath() . ': ' . $error->getMessage();
-            }
-            return new JsonResponse(['errors' => $messages], 400);
+            return $this->validationErrorsResponse($errors);
         }
 
         $updatedCompany = $this->service->update($company, $dto);
@@ -105,5 +86,25 @@ class CompanyController extends AbstractController
 
         $this->service->delete($company);
         return new JsonResponse(null, 204);
+    }
+
+    private function mapRequestToDTO(Request $request, ?Company $company = null): CompanyDTO
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $dto = new CompanyDTO();
+        $dto->name = $data['name'] ?? $company?->getName();
+        $dto->cnpj = $data['cnpj'] ?? $company?->getCnpj();
+
+        return $dto;
+    }
+
+    private function validationErrorsResponse($errors): JsonResponse
+    {
+        $messages = [];
+        foreach ($errors as $error) {
+            $messages[] = $error->getPropertyPath() . ': ' . $error->getMessage();
+        }
+        return new JsonResponse(['errors' => $messages], 400);
     }
 }
